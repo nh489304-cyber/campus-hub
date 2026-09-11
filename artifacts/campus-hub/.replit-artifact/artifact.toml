@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Campus Hub"
+description = "A searchable campus clubs and events hub where students can discover clubs, understand membership requirements, browse upcoming events, and find registration, venue, fee, and duty-leave information in one place."
+version = "1.0.0"
+id = "artifacts/campus-hub"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19198
+
+[services.development]
+run = "pnpm --filter @workspace/campus-hub run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/campus-hub", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/campus-hub/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19198"
+BASE_PATH = "/"
