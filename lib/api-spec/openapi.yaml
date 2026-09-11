@@ -1,0 +1,319 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: clubs
+    description: Club directory operations
+  - name: events
+    description: Campus event operations
+  - name: dashboard
+    description: Campus overview operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Get campus overview
+      description: Returns high-level counts and highlighted content for the student home page
+      responses:
+        "200":
+          description: Campus overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+  /clubs:
+    get:
+      operationId: listClubs
+      tags: [clubs]
+      summary: List clubs
+      description: Returns searchable, filterable campus clubs
+      parameters:
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [popular, alphabetical, recentlyUpdated]
+            default: popular
+      responses:
+        "200":
+          description: Clubs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Club"
+  /clubs/{id}:
+    get:
+      operationId: getClub
+      tags: [clubs]
+      summary: Get a club
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Club details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Club"
+        "404":
+          description: Club not found
+  /events:
+    get:
+      operationId: listEvents
+      tags: [events]
+      summary: List upcoming events
+      description: Returns upcoming campus events with registration and attendance details
+      parameters:
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: clubId
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: dateRange
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [today, thisWeek, thisMonth]
+            default: thisMonth
+        - name: freeOnly
+          in: query
+          required: false
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+  /events/{id}:
+    get:
+      operationId: getEvent
+      tags: [events]
+      summary: Get an event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Event details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "404":
+          description: Event not found
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    ClubRole:
+      type: object
+      properties:
+        title:
+          type: string
+        responsibility:
+          type: string
+        openings:
+          type: integer
+      required: [title, responsibility, openings]
+    Club:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        shortName:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+        mission:
+          type: string
+        color:
+          type: string
+        officeLocation:
+          type: string
+        meetingSchedule:
+          type: string
+        eligibility:
+          type: string
+        membershipStatus:
+          type: string
+          enum: [Open, "By application", Closed]
+        memberCount:
+          type: integer
+        upcomingEventCount:
+          type: integer
+        contactEmail:
+          type: string
+        facultyAdvisor:
+          type: string
+        roles:
+          type: array
+          items:
+            $ref: "#/components/schemas/ClubRole"
+      required:
+        - id
+        - name
+        - shortName
+        - category
+        - description
+        - mission
+        - color
+        - officeLocation
+        - meetingSchedule
+        - eligibility
+        - membershipStatus
+        - memberCount
+        - upcomingEventCount
+        - contactEmail
+        - facultyAdvisor
+        - roles
+    Event:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        clubId:
+          type: integer
+        clubName:
+          type: string
+        category:
+          type: string
+        date:
+          type: string
+          format: date
+        startTime:
+          type: string
+        endTime:
+          type: string
+        venue:
+          type: string
+        description:
+          type: string
+        entryFee:
+          type: number
+        registrationDeadline:
+          type: string
+          format: date
+        registrationCriteria:
+          type: string
+        dutyLeave:
+          type: boolean
+        seatsLeft:
+          type: integer
+        registrationUrl:
+          type: string
+        color:
+          type: string
+      required:
+        - id
+        - title
+        - clubId
+        - clubName
+        - category
+        - date
+        - startTime
+        - endTime
+        - venue
+        - description
+        - entryFee
+        - registrationDeadline
+        - registrationCriteria
+        - dutyLeave
+        - seatsLeft
+        - registrationUrl
+        - color
+    DashboardSummary:
+      type: object
+      properties:
+        clubCount:
+          type: integer
+        eventCount:
+          type: integer
+        openRecruitments:
+          type: integer
+        eventsToday:
+          type: integer
+        featuredClubs:
+          type: array
+          items:
+            $ref: "#/components/schemas/Club"
+        featuredEvents:
+          type: array
+          items:
+            $ref: "#/components/schemas/Event"
+      required:
+        - clubCount
+        - eventCount
+        - openRecruitments
+        - eventsToday
+        - featuredClubs
+        - featuredEvents
+
